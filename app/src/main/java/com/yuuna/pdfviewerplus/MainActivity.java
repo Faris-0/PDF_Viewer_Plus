@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
@@ -63,13 +62,7 @@ public class MainActivity extends Activity {
                 } catch (ActivityNotFoundException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        TAG_PDF
-                );
-            }
+            } else ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, TAG_PDF);
         });
 
         findViewById(R.id.setting_doc).setOnClickListener(v -> getQuality());
@@ -87,8 +80,7 @@ public class MainActivity extends Activity {
         dialog.findViewById(R.id.ok).setOnClickListener(v -> {
             try {
                 PDFBoxResourceLoader.init(getApplicationContext());
-                InputStream inputStream = getContentResolver().openInputStream(uri);
-                PDDocument pdd = PDDocument.load(inputStream, etPass.getText().toString());
+                PDDocument pdd = PDDocument.load(getContentResolver().openInputStream(uri), etPass.getText().toString());
                 pdd.setAllSecurityToBeRemoved(true);
                 FileOutputStream fos = openFileOutput("decrypt.pdf", Context.MODE_PRIVATE);
                 pdd.save(fos);
@@ -109,9 +101,9 @@ public class MainActivity extends Activity {
         String[] com = {"HIGH", "MEDIUM", "LOW"};
         new AlertDialog.Builder(this)
                 .setTitle("Quality")
-                .setItems(com, (dialog, which) -> {
-                    dialog.dismiss();
-                    switch(which){
+                .setItems(com, (d, w) -> {
+                    d.dismiss();
+                    switch(w){
                         case 0:
                             qDefault = 72;
                             if (uri != null) new AsyncCaller().execute();
@@ -134,16 +126,12 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == TAG_PDF) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("application/pdf");
                 try {
-                    startActivityForResult(intent, TAG_PDF);
+                    startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("application/pdf"), TAG_PDF);
                 } catch (ActivityNotFoundException e) {
                     Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-            } else {
-                Toast.makeText(this, "Tidak ada perizinan untuk mengakses file", Toast.LENGTH_SHORT).show();
-            }
+            } else Toast.makeText(this, "Tidak ada perizinan untuk mengakses file", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -173,8 +161,7 @@ public class MainActivity extends Activity {
             //this method will be running on background thread so don't update UI frome here
             //do your long running http tasks here,you dont want to pass argument and u can access the parent class' variable url over here
             try {
-                ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");
-                renderAllPages(parcelFileDescriptor);
+                renderAllPages(getContentResolver().openFileDescriptor(uri, "r"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 updateUI(e.getMessage());
