@@ -1,9 +1,5 @@
 # PDF Viewer Plus
 
----
-*This is staging project currently maintained. As per 04/05/2023
----
-
 ### Introduction
 
 This Android PDF viewer app is based on the open source.
