@@ -182,49 +182,46 @@ public class MainActivity extends Activity {
         try {
             PdfRenderer renderer = new PdfRenderer(parcelFileDescriptor);
 
-            if (renderer != null) {
-                // let us just render all pages
-                final Integer pageCount = renderer.getPageCount();
-                sliderItemsArrayList = new ArrayList<>();
-                for (int i = 0; i < pageCount; i++) {
-                    PdfRenderer.Page page = renderer.openPage(i);
+            // let us just render all pages
+            sliderItemsArrayList = new ArrayList<>();
+            for (int i = 0; i < renderer.getPageCount(); i++) {
+                PdfRenderer.Page page = renderer.openPage(i);
 
-                    // Important: the destination bitmap must be ARGB (not RGB).
-                    Bitmap bitmap = Bitmap.createBitmap(
-                            getResources().getDisplayMetrics().densityDpi * page.getWidth() / qDefault,
-                            getResources().getDisplayMetrics().densityDpi * page.getHeight() / qDefault,
-                            Bitmap.Config.ARGB_8888
-                    );
+                // Important: the destination bitmap must be ARGB (not RGB).
+                Bitmap bitmap = Bitmap.createBitmap(
+                        getResources().getDisplayMetrics().densityDpi * page.getWidth() / qDefault,
+                        getResources().getDisplayMetrics().densityDpi * page.getHeight() / qDefault,
+                        Bitmap.Config.ARGB_8888
+                );
 
-                    // Paint bitmap before rendering
-                    Canvas canvas = new Canvas(bitmap);
-                    canvas.drawColor(Color.WHITE);
-                    canvas.drawBitmap(bitmap, 0, 0, null);
+                // Paint bitmap before rendering
+                Canvas canvas = new Canvas(bitmap);
+                canvas.drawColor(Color.WHITE);
+                canvas.drawBitmap(bitmap, 0, 0, null);
 
-                    // say we render for showing on the screen
-                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                // say we render for showing on the screen
+                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
-                    // do stuff with the bitmap
-                    sliderItemsArrayList.add(new SliderItems(i + ".jpeg"));
-                    try {
-                        FileOutputStream fileOutputStream = openFileOutput(i + ".jpeg", Context.MODE_PRIVATE);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, fileOutputStream);
-                        fileOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        updateUI(e.getMessage());
-                    }
-
-                    // close the page
-                    page.close();
+                // do stuff with the bitmap
+                sliderItemsArrayList.add(new SliderItems(i + ".jpeg"));
+                try {
+                    FileOutputStream fileOutputStream = openFileOutput(i + ".jpeg", Context.MODE_PRIVATE);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 20, fileOutputStream);
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    updateUI(e.getMessage());
                 }
 
-                // close the renderer
-                renderer.close();
-
-                final String show = "update";
-                updateUI(show);
+                // close the page
+                page.close();
             }
+
+            // close the renderer
+            renderer.close();
+
+            final String show = "update";
+            updateUI(show);
         } catch (SecurityException e) {
             isPass = true;
             updateUI(e.getMessage());
